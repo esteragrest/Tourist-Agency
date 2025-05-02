@@ -13,6 +13,12 @@ namespace TouristAgencyAPI
 
         public DbSet<User> Users { get; set; }
 
+        public DbSet<Hotel> Hotels { get; set; }
+
+        public DbSet<HotelRoom> HotelRooms { get; set; }
+
+        public DbSet<Booking> Bookings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TouristRoute>().ToTable("Routes");
