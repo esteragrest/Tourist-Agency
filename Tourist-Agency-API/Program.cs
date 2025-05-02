@@ -15,8 +15,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<ITouristRouteRepository, TouristRouteRepository>();
+builder.Services.AddScoped<ITouristRouteRepository, TouristRouteRepository>();
 builder.Services.AddScoped<ITouristRouteService, TouristRouteService>();
+
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
+
 
 var app = builder.Build();
 

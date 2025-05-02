@@ -9,6 +9,8 @@ namespace TouristAgencyAPI
 
         public DbSet<TouristRoute> TouristRoutes { get; set; }
 
+        public DbSet<UserRole> UserRoles { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TouristRoute>().ToTable("Routes");
