@@ -22,5 +22,7 @@ namespace TouristAgencyAPI.Services
         public void Update(User user) => _repository.Update(user);
 
         public void Delete(int id) => _repository.Delete(id);
+
+        public User? GetByEmail(string email) => _repository.GetByEmail(email);
     }
 }

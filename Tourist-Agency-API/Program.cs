@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TouristAgencyAPI;
 using TouristAgencyAPI.Interfaces.Repositories;
@@ -6,15 +9,49 @@ using TouristAgencyAPI.Repositories;
 using TouristAgencyAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-//builder.WebHost.UseUrls("https://localhost:7276");
 
+// Настройка подключения к базе данных
 builder.Services.AddDbContext<TouristAgencyContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Настройка аутентификации и авторизации с использованием JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Настраиваем событие, чтобы извлекать токен из cookie с именем "jwt"
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Cookies["jwt"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
+        };
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Добавление контроллеров и Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Регистрация зависимостей для репозиториев и сервисов
 builder.Services.AddScoped<ITouristRouteRepository, TouristRouteRepository>();
 builder.Services.AddScoped<ITouristRouteService, TouristRouteService>();
 
@@ -35,16 +72,17 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-
+// Использование Swagger (если требуется)
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Включение HTTPS редиректа
 app.UseHttpsRedirection();
+
+// Включение аутентификации и авторизации
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

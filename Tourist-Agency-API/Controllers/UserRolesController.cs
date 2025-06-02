@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using TouristAgencyAPI.Entities;
 using TouristAgencyAPI.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TouristAgencyAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "admin")]  // Только администратор имеет доступ к этим эндпоинтам
     public class UserRolesController : ControllerBase
     {
         private readonly IUserRoleService _service;
@@ -35,7 +37,9 @@ namespace TouristAgencyAPI.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(int id, UserRole role)
         {
-            if (id != role.Id) return BadRequest();
+            if (id != role.Id)
+                return BadRequest();
+
             _service.Update(role);
             return NoContent();
         }
