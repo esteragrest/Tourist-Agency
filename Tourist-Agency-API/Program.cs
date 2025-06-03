@@ -10,15 +10,12 @@ using TouristAgencyAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка подключения к базе данных
 builder.Services.AddDbContext<TouristAgencyContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Настройка аутентификации и авторизации с использованием JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // Настраиваем событие, чтобы извлекать токен из cookie с именем "jwt"
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>

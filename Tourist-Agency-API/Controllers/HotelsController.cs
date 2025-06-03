@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using TouristAgencyAPI.Entities;
+using TouristAgencyAPI.Interfaces.Repositories;
 using TouristAgencyAPI.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace TouristAgencyAPI.Controllers
 {
@@ -9,33 +11,65 @@ namespace TouristAgencyAPI.Controllers
     [Route("[controller]")]
     public class HotelsController : ControllerBase
     {
-        private readonly IHotelService _service;
+        private readonly IHotelService _hotelService;
+        private readonly IHotelRoomRepository _roomRepository;
 
-        public HotelsController(IHotelService service)
+        public HotelsController(IHotelService hotelService, IHotelRoomRepository roomRepository)
         {
-            _service = service;
+            _hotelService = hotelService;
+            _roomRepository = roomRepository;
         }
 
         // Получение списка отелей – доступно всем пользователям
         [HttpGet]
         [AllowAnonymous]
-        public IEnumerable<Hotel> GetAll() => _service.GetAll();
+        public IActionResult GetAll()
+        {
+            var hotels = _hotelService.GetAll();
+            return Ok(hotels);
+        }
 
-        // Получение конкретного отеля по id – доступно всем пользователям
+        // Получение конкретного отеля с его номерами (добавлено поле Rooms) – доступно всем пользователям
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public ActionResult<Hotel> GetById(int id)
+        public IActionResult GetById(int id)
         {
-            var hotel = _service.GetById(id);
-            return hotel == null ? NotFound() : Ok(hotel);
+            var hotel = _hotelService.GetById(id);
+            if (hotel == null)
+                return NotFound();
+
+            // Получаем список номеров для данного отеля
+            var rooms = _roomRepository.GetRoomsByHotelId(hotel.Id).ToList();
+
+            // Формируем анонимный объект, включающий отель и дополнительное поле Rooms
+            var result = new
+            {
+                hotel.Id,
+                hotel.Title,
+                hotel.Location,
+                hotel.Description,
+                hotel.Price,
+                Rooms = rooms
+            };
+
+            return Ok(result);
+        }
+
+        // Поиск отелей по названию – доступно всем пользователям
+        [HttpGet("search/{query}")]
+        [AllowAnonymous]
+        public IActionResult SearchHotels(string query)
+        {
+            var hotels = _hotelService.SearchHotels(query);
+            return Ok(hotels);
         }
 
         // Добавление нового отеля – доступно только менеджерам и администраторам
         [HttpPost]
         [Authorize(Roles = "manager,admin")]
-        public ActionResult<Hotel> Add(Hotel hotel)
+        public IActionResult Add(Hotel hotel)
         {
-            var newHotel = _service.Add(hotel);
+            var newHotel = _hotelService.Add(hotel);
             return CreatedAtAction(nameof(GetById), new { id = newHotel.Id }, newHotel);
         }
 
@@ -46,7 +80,7 @@ namespace TouristAgencyAPI.Controllers
         {
             if (id != hotel.Id)
                 return BadRequest();
-            _service.Update(hotel);
+            _hotelService.Update(hotel);
             return NoContent();
         }
 
@@ -55,7 +89,7 @@ namespace TouristAgencyAPI.Controllers
         [Authorize(Roles = "admin")]
         public IActionResult Delete(int id)
         {
-            _service.Delete(id);
+            _hotelService.Delete(id);
             return NoContent();
         }
     }

@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using TouristAgencyAPI.Entities;
 using TouristAgencyAPI.Interfaces.Repositories;
 
@@ -14,6 +15,9 @@ namespace TouristAgencyAPI.Repositories
         }
 
         public IEnumerable<HotelRoom> GetAll() => _context.HotelRooms.ToList();
+
+        public IEnumerable<HotelRoom> GetRoomsByHotelId(int hotelId) =>
+            _context.HotelRooms.Where(r => r.HotelId == hotelId).ToList();
 
         public HotelRoom? GetById(int id) => _context.HotelRooms.Find(id);
 
@@ -32,10 +36,10 @@ namespace TouristAgencyAPI.Repositories
 
         public void Delete(int id)
         {
-            var hotelRoom = _context.HotelRooms.Find(id);
-            if (hotelRoom != null)
+            var room = _context.HotelRooms.Find(id);
+            if (room != null)
             {
-                _context.HotelRooms.Remove(hotelRoom);
+                _context.HotelRooms.Remove(room);
                 _context.SaveChanges();
             }
         }

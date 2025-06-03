@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TouristAgencyAPI.Entities;
 using TouristAgencyAPI.Interfaces.Repositories;
 using TouristAgencyAPI.Interfaces.Services;
@@ -6,21 +7,29 @@ namespace TouristAgencyAPI.Services
 {
     public class HotelService : IHotelService
     {
-        private readonly IHotelRepository _repository;
+        private readonly IHotelRepository _hotelRepository;
 
-        public HotelService(IHotelRepository repository)
+        public HotelService(IHotelRepository hotelRepository)
         {
-            _repository = repository;
+            _hotelRepository = hotelRepository;
         }
 
-        public IEnumerable<Hotel> GetAll() => _repository.GetAll();
+        public IEnumerable<Hotel> GetAll()
+        {
+            return _hotelRepository.GetAll();
+        }
 
-        public Hotel? GetById(int id) => _repository.GetById(id);
+        public IEnumerable<Hotel> SearchHotels(string query)
+        {
+            return _hotelRepository.SearchHotels(query);
+        }
 
-        public Hotel Add(Hotel hotel) => _repository.Add(hotel);
+        public Hotel? GetById(int id) => _hotelRepository.GetById(id);
 
-        public void Update(Hotel hotel) => _repository.Update(hotel);
+        public Hotel Add(Hotel hotel) => _hotelRepository.Add(hotel);
 
-        public void Delete(int id) => _repository.Delete(id);
+        public void Update(Hotel hotel) => _hotelRepository.Update(hotel);
+
+        public void Delete(int id) => _hotelRepository.Delete(id);
     }
 }

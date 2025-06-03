@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using TouristAgencyAPI.Entities;
 using TouristAgencyAPI.Interfaces.Repositories;
@@ -13,9 +15,22 @@ namespace TouristAgencyAPI.Repositories
             _context = context;
         }
 
-        public IEnumerable<Hotel> GetAll() => _context.Hotels.ToList();
+        public IEnumerable<Hotel> GetAll()
+        {
+            return _context.Hotels.ToList();
+        }
 
-        public Hotel? GetById(int id) => _context.Hotels.Find(id);
+        public IEnumerable<Hotel> SearchHotels(string query)
+        {
+            return _context.Hotels
+                .Where(h => EF.Functions.Like(h.Title.ToLower(), $"%{query.ToLower()}%"))
+                .ToList();
+        }
+
+        public Hotel? GetById(int id)
+        {
+            return _context.Hotels.Find(id);
+        }
 
         public Hotel Add(Hotel hotel)
         {

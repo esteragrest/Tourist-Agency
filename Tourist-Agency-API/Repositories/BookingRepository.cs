@@ -15,6 +15,10 @@ namespace TouristAgencyAPI.Repositories
 
         public IEnumerable<Booking> GetAll() => _context.Bookings.ToList();
 
+        public IEnumerable<Booking> GetByUserId(int userId) => _context.Bookings.Where(b => b.UserId == userId).ToList();
+
+        public IEnumerable<Booking> GetByHotelId(int hotelId) => _context.Bookings.Where(b => b.HotelId == hotelId).ToList();
+
         public Booking? GetById(int id) => _context.Bookings.Find(id);
 
         public Booking Add(Booking booking)
@@ -38,6 +42,13 @@ namespace TouristAgencyAPI.Repositories
                 _context.Bookings.Remove(booking);
                 _context.SaveChanges();
             }
+        }
+
+        public bool IsRoomAvailable(int roomId, DateTime checkIn, DateTime checkOut)
+        {
+            return !_context.Bookings.Any(b =>
+                b.RoomId == roomId &&
+                ((b.CheckInDate <= checkOut && b.CheckOutDate >= checkIn)));
         }
     }
 }
